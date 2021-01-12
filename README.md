@@ -1,15 +1,6 @@
-## My Project
+## AWS CloudFormation Resource Providers Lookout for Vision
 
-TODO: Fill this README out!
-
-Be sure to:
-
-* Change the title in this README
-* Edit your repository description on GitHub
-
-## Security
-
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+The CloudFormation Resource Provider Package for Amazon Lookout for Vision.
 
 ## License
 
