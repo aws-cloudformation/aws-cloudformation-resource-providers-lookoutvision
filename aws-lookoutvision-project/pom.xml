@@ -31,12 +31,6 @@
             <artifactId>aws-cloudformation-rpdk-java-plugin</artifactId>
             <version>[2.0.0,3.0.0)</version>
         </dependency>
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/com.google.inject/guice &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.google.inject</groupId>-->
-<!--            <artifactId>guice</artifactId>-->
-<!--            <version>[4.2.0,4.3.0)</version>-->
-<!--        </dependency>-->
         <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
