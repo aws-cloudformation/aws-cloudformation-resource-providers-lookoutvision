@@ -1,6 +1,6 @@
 # AWS::LookoutVision::Project
 
-An Amazon Lookout for Vision project
+The AWS::LookoutVision::Project type creates an Amazon Lookout for Vision project. A project is a grouping of the resources needed to create and manage a Lookout for Vision model.
 
 ## Syntax
 
@@ -29,7 +29,7 @@ Properties:
 
 #### ProjectName
 
-A name for the Amazon Lookout for Vision project
+The name of the Amazon Lookout for Vision project
 
 _Required_: Yes
 
