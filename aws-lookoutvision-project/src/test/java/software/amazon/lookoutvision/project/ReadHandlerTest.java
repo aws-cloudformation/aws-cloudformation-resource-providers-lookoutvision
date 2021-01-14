@@ -1,8 +1,14 @@
 package software.amazon.lookoutvision.project;
 
 import java.time.Duration;
+
+import org.mockito.ArgumentMatchers;
 import software.amazon.awssdk.core.SdkClient;
+import software.amazon.awssdk.services.lookoutvision.model.DescribeProjectResponse;
+import software.amazon.awssdk.services.lookoutvision.model.ProjectDescription;
+import software.amazon.cloudformation.exceptions.ResourceNotFoundException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
+import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.OperationStatus;
 import software.amazon.cloudformation.proxy.ProgressEvent;
 import software.amazon.cloudformation.proxy.ProxyClient;
@@ -15,54 +21,112 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @ExtendWith(MockitoExtension.class)
-public class ReadHandlerTest extends AbstractTestBase {
+public class ReadHandlerTest {
+    private ReadHandler handler;
 
     @Mock
     private AmazonWebServicesClientProxy proxy;
 
     @Mock
-    private ProxyClient<SdkClient> proxyClient;
-
-    @Mock
-    SdkClient sdkClient;
+    private Logger logger;
 
     @BeforeEach
     public void setup() {
-        proxy = new AmazonWebServicesClientProxy(logger, MOCK_CREDENTIALS, () -> Duration.ofSeconds(600).toMillis());
-        sdkClient = mock(SdkClient.class);
-        proxyClient = MOCK_PROXY(proxy, sdkClient);
-    }
-
-    @AfterEach
-    public void tear_down() {
-        verify(sdkClient, atLeastOnce()).serviceName();
-        verifyNoMoreInteractions(sdkClient);
+        handler = new ReadHandler();
+        proxy = mock(AmazonWebServicesClientProxy.class);
+        logger = mock(Logger.class);
     }
 
     @Test
-    public void handleRequest_SimpleSuccess() {
-        final ReadHandler handler = new ReadHandler();
+    public void handleRequest_Success() {
+        final String projectName = "projectName";
+        final String projectArn = "arn:aws:lookoutvision:us-east-1:111111111111:project/projectName";
 
-        final ResourceModel model = ResourceModel.builder().build();
-
-        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
-            .desiredResourceState(model)
+        final DescribeProjectResponse describeResponse = DescribeProjectResponse.builder()
+            .projectDescription(ProjectDescription.builder()
+                .projectArn(projectArn)
+                .projectName(projectName)
+                .build())
             .build();
 
-        final ProgressEvent<ResourceModel, CallbackContext> response = handler.handleRequest(proxy, request, new CallbackContext(), proxyClient, logger);
+        doReturn(describeResponse)
+            .when(proxy)
+            .injectCredentialsAndInvokeV2(
+                ArgumentMatchers.any(),
+                ArgumentMatchers.any()
+            );
+
+        final ResourceModel expectedOutputModel = ResourceModel.builder()
+            .projectName(projectName)
+            .arn(projectArn)
+            .build();
+
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+            .desiredResourceState(ResourceModel.builder()
+                .projectName(projectName)
+                .build())
+            .build();
+
+        final ProgressEvent<ResourceModel, CallbackContext> response = handler.handleRequest(proxy, request, null, logger);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo(OperationStatus.SUCCESS);
+        assertThat(response.getCallbackContext()).isNull();
         assertThat(response.getCallbackDelaySeconds()).isEqualTo(0);
-        assertThat(response.getResourceModel()).isEqualTo(request.getDesiredResourceState());
         assertThat(response.getResourceModels()).isNull();
+        assertThat(response.getResourceModel()).isEqualToComparingFieldByField(expectedOutputModel);
         assertThat(response.getMessage()).isNull();
         assertThat(response.getErrorCode()).isNull();
     }
+
+    @Test
+    public void handleRequest_FailureNotFound_WithException() {
+        doThrow(software.amazon.awssdk.services.lookoutvision.model.ResourceNotFoundException.class)
+            .when(proxy)
+            .injectCredentialsAndInvokeV2(
+                ArgumentMatchers.any(),
+                ArgumentMatchers.any()
+            );
+
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+            .desiredResourceState(ResourceModel.builder()
+                .projectName("projectName")
+                .build())
+            .build();
+
+        assertThrows(ResourceNotFoundException.class,
+            () -> handler.handleRequest(proxy, request, null, logger));
+    }
+
+    @Test
+    public void handleRequest_FailureNotFound_NullProjectNameInput() {
+        ResourceModel inputModel = ResourceModel.builder()
+            .build();
+
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+            .desiredResourceState(inputModel)
+            .build();
+
+        assertThrows(ResourceNotFoundException.class,
+            () -> handler.handleRequest(proxy, request, null, logger));
+    }
+
+    @Test
+    public void handleRequest_FailureNotFound_NullModel() {
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+            .build();
+
+        assertThrows(ResourceNotFoundException.class,
+            () -> handler.handleRequest(proxy, request, null, logger));
+    }
+
 }
