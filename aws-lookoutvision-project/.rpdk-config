@@ -6,12 +6,6 @@
     "entrypoint": "software.amazon.lookoutvision.project.HandlerWrapper::handleRequest",
     "testEntrypoint": "software.amazon.lookoutvision.project.HandlerWrapper::testEntrypoint",
     "settings": {
-        "version": false,
-        "subparser_name": null,
-        "verbose": 0,
-        "force": false,
-        "type_name": null,
-        "artifact_type": null,
         "namespace": [
             "software",
             "amazon",

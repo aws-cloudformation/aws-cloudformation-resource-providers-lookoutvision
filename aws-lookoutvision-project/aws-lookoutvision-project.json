@@ -1,105 +1,69 @@
 {
   "typeName": "AWS::LookoutVision::Project",
-  "description": "An example resource schema demonstrating some basic constructs and validation rules.",
-  "sourceUrl": "https://github.com/aws-cloudformation/aws-cloudformation-rpdk.git",
+  "description": "The AWS::LookoutVision::Project type creates an Amazon Lookout for Vision project. A project is a grouping of the resources needed to create and manage a Lookout for Vision model.",
+  "sourceUrl": "https://docs.aws.amazon.com/lookout-for-vision/latest/developer-guide/model-create-project.html",
   "definitions": {
-    "InitechDateFormat": {
-      "$comment": "Use the `definitions` block to provide shared resource property schemas",
+    "Arn": {
       "type": "string",
-      "format": "date-time"
+      "maxLength": 1000
     },
-    "Memo": {
-      "type": "object",
-      "properties": {
-        "Heading": {
-          "type": "string"
-        },
-        "Body": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
+    "ProjectName": {
+      "description": "The name of the Amazon Lookout for Vision project",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "pattern": "[a-zA-Z0-9][a-zA-Z0-9_\\-]*"
     }
   },
   "properties": {
-    "TPSCode": {
-      "description": "A TPS Code is automatically generated on creation and assigned as the unique identifier.",
-      "type": "string",
-      "pattern": "^[A-Z]{3,5}[0-9]{8}-[0-9]{4}$"
+    "Arn": {
+      "$ref": "#/definitions/Arn"
     },
-    "Title": {
-      "description": "The title of the TPS report is a mandatory element.",
-      "type": "string",
-      "minLength": 20,
-      "maxLength": 250
-    },
-    "CoverSheetIncluded": {
-      "description": "Required for all TPS Reports submitted after 2/19/1999",
-      "type": "boolean"
-    },
-    "DueDate": {
-      "$ref": "#/definitions/InitechDateFormat"
-    },
-    "ApprovalDate": {
-      "$ref": "#/definitions/InitechDateFormat"
-    },
-    "Memo": {
-      "$ref": "#/definitions/Memo"
-    },
-    "SecondCopyOfMemo": {
-      "description": "In case you didn't get the first one.",
-      "$ref": "#/definitions/Memo"
-    },
-    "TestCode": {
-      "type": "string",
-      "enum": [
-        "NOT_STARTED",
-        "CANCELLED"
-      ]
-    },
-    "Authors": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+    "ProjectName": {
+      "$ref": "#/definitions/ProjectName"
     }
   },
   "additionalProperties": false,
   "required": [
-    "TestCode",
-    "Title"
+    "ProjectName"
   ],
   "readOnlyProperties": [
-    "/properties/TPSCode"
+    "/properties/Arn"
+  ],
+  "createOnlyProperties": [
+    "/properties/ProjectName"
   ],
   "primaryIdentifier": [
-    "/properties/TPSCode"
+    "/properties/Arn"
   ],
   "handlers": {
     "create": {
       "permissions": [
-        "initech:CreateReport"
-      ]
+        "lookoutvision:CreateProject"
+      ],
+      "timeoutInMinutes": 15
     },
     "read": {
       "permissions": [
-        "initech:DescribeReport"
-      ]
+        "lookoutvision:DescribeProject"
+      ],
+      "timeoutInMinutes": 15
     },
     "update": {
-      "permissions": [
-        "initech:UpdateReport"
-      ]
+      "permissions": [],
+      "timeoutInMinutes": 15
     },
     "delete": {
       "permissions": [
-        "initech:DeleteReport"
-      ]
+        "lookoutvision:DeleteProject"
+      ],
+      "timeoutInMinutes": 15
     },
     "list": {
       "permissions": [
-        "initech:ListReports"
-      ]
+        "lookoutvision:ListProjects"
+      ],
+      "timeoutInMinutes": 15
     }
   }
 }

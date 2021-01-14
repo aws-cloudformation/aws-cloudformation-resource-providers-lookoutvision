@@ -3,6 +3,9 @@ package software.amazon.lookoutvision.project;
 import com.google.common.collect.Lists;
 import software.amazon.awssdk.awscore.AwsRequest;
 import software.amazon.awssdk.awscore.AwsResponse;
+import software.amazon.awssdk.services.lookoutvision.model.CreateProjectRequest;
+import software.amazon.awssdk.services.lookoutvision.model.DescribeProjectRequest;
+import software.amazon.awssdk.services.lookoutvision.model.DescribeProjectResponse;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,36 +25,38 @@ public class Translator {
   /**
    * Request to create a resource
    * @param model resource model
-   * @return awsRequest the aws service request to create a resource
+   * @return createProjectRequest the aws service request to create a project
    */
-  static AwsRequest translateToCreateRequest(final ResourceModel model) {
-    final AwsRequest awsRequest = null;
-    // TODO: construct a request
-    // e.g. https://github.com/aws-cloudformation/aws-cloudformation-resource-providers-logs/blob/2077c92299aeb9a68ae8f4418b5e932b12a8b186/aws-logs-loggroup/src/main/java/com/aws/logs/loggroup/Translator.java#L39-L43
-    return awsRequest;
+  static CreateProjectRequest translateToCreateRequest(final ResourceModel model) {
+    final CreateProjectRequest createProjectRequest = CreateProjectRequest.builder()
+        .projectName(model.getProjectName())
+        .build();
+
+    return createProjectRequest;
   }
 
   /**
    * Request to read a resource
    * @param model resource model
-   * @return awsRequest the aws service request to describe a resource
+   * @return describeProjectRequest the aws service request to describe a project
    */
-  static AwsRequest translateToReadRequest(final ResourceModel model) {
-    final AwsRequest awsRequest = null;
-    // TODO: construct a request
-    // e.g. https://github.com/aws-cloudformation/aws-cloudformation-resource-providers-logs/blob/2077c92299aeb9a68ae8f4418b5e932b12a8b186/aws-logs-loggroup/src/main/java/com/aws/logs/loggroup/Translator.java#L20-L24
-    return awsRequest;
+  static DescribeProjectRequest translateToReadRequest(final ResourceModel model) {
+    final DescribeProjectRequest describeProjectRequest = DescribeProjectRequest.builder()
+        .projectName(model.getProjectName())
+        .build();
+    return describeProjectRequest;
   }
 
   /**
    * Translates resource object from sdk into a resource model
-   * @param awsResponse the aws service describe resource response
+   * @param describeProjectResponse the lookout vision describe project response
    * @return model resource model
    */
-  static ResourceModel translateFromReadResponse(final AwsResponse awsResponse) {
+  static ResourceModel translateFromReadResponse(final DescribeProjectResponse describeProjectResponse) {
     // e.g. https://github.com/aws-cloudformation/aws-cloudformation-resource-providers-logs/blob/2077c92299aeb9a68ae8f4418b5e932b12a8b186/aws-logs-loggroup/src/main/java/com/aws/logs/loggroup/Translator.java#L58-L73
     return ResourceModel.builder()
-        //.someProperty(response.property())
+        .projectName(describeProjectResponse.projectDescription().projectName())
+        .arn(describeProjectResponse.projectDescription().projectArn())
         .build();
   }
 
