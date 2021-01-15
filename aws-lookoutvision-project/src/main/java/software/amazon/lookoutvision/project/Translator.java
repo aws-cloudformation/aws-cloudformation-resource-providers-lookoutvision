@@ -1,11 +1,11 @@
 package software.amazon.lookoutvision.project;
 
-import com.google.common.collect.Lists;
-import software.amazon.awssdk.awscore.AwsRequest;
-import software.amazon.awssdk.awscore.AwsResponse;
 import software.amazon.awssdk.services.lookoutvision.model.CreateProjectRequest;
+import software.amazon.awssdk.services.lookoutvision.model.DeleteProjectRequest;
 import software.amazon.awssdk.services.lookoutvision.model.DescribeProjectRequest;
 import software.amazon.awssdk.services.lookoutvision.model.DescribeProjectResponse;
+import software.amazon.awssdk.services.lookoutvision.model.ListProjectsRequest;
+import software.amazon.awssdk.services.lookoutvision.model.ListProjectsResponse;
 
 import java.util.Collection;
 import java.util.List;
@@ -61,38 +61,14 @@ public class Translator {
   }
 
   /**
-   * Request to delete a resource
+   * Request to delete a project
    * @param model resource model
-   * @return awsRequest the aws service request to delete a resource
+   * @return deleteProjectRequest the aws service request to delete a project
    */
-  static AwsRequest translateToDeleteRequest(final ResourceModel model) {
-    final AwsRequest awsRequest = null;
-    // TODO: construct a request
-    // e.g. https://github.com/aws-cloudformation/aws-cloudformation-resource-providers-logs/blob/2077c92299aeb9a68ae8f4418b5e932b12a8b186/aws-logs-loggroup/src/main/java/com/aws/logs/loggroup/Translator.java#L33-L37
-    return awsRequest;
-  }
-
-  /**
-   * Request to update properties of a previously created resource
-   * @param model resource model
-   * @return awsRequest the aws service request to modify a resource
-   */
-  static AwsRequest translateToFirstUpdateRequest(final ResourceModel model) {
-    final AwsRequest awsRequest = null;
-    // TODO: construct a request
-    // e.g. https://github.com/aws-cloudformation/aws-cloudformation-resource-providers-logs/blob/2077c92299aeb9a68ae8f4418b5e932b12a8b186/aws-logs-loggroup/src/main/java/com/aws/logs/loggroup/Translator.java#L45-L50
-    return awsRequest;
-  }
-
-  /**
-   * Request to update some other properties that could not be provisioned through first update request
-   * @param model resource model
-   * @return awsRequest the aws service request to modify a resource
-   */
-  static AwsRequest translateToSecondUpdateRequest(final ResourceModel model) {
-    final AwsRequest awsRequest = null;
-    // TODO: construct a request
-    return awsRequest;
+  static DeleteProjectRequest translateToDeleteRequest(final ResourceModel model) {
+    return DeleteProjectRequest.builder()
+        .projectName(model.getProjectName())
+        .build();
   }
 
   /**
@@ -100,23 +76,24 @@ public class Translator {
    * @param nextToken token passed to the aws service list resources request
    * @return awsRequest the aws service request to list resources within aws account
    */
-  static AwsRequest translateToListRequest(final String nextToken) {
-    final AwsRequest awsRequest = null;
-    // TODO: construct a request
-    // e.g. https://github.com/aws-cloudformation/aws-cloudformation-resource-providers-logs/blob/2077c92299aeb9a68ae8f4418b5e932b12a8b186/aws-logs-loggroup/src/main/java/com/aws/logs/loggroup/Translator.java#L26-L31
-    return awsRequest;
+  static ListProjectsRequest translateToListRequest(final String nextToken) {
+    return ListProjectsRequest.builder()
+        .maxResults(50)
+        .nextToken(nextToken)
+        .build();
   }
 
   /**
    * Translates resource objects from sdk into a resource model (primary identifier only)
-   * @param awsResponse the aws service describe resource response
+   * @param response the aws service describe resource response
    * @return list of resource models
    */
-  static List<ResourceModel> translateFromListRequest(final AwsResponse awsResponse) {
+  static List<ResourceModel> translateFromListRequest(final ListProjectsResponse response) {
     // e.g. https://github.com/aws-cloudformation/aws-cloudformation-resource-providers-logs/blob/2077c92299aeb9a68ae8f4418b5e932b12a8b186/aws-logs-loggroup/src/main/java/com/aws/logs/loggroup/Translator.java#L75-L82
-    return streamOfOrEmpty(Lists.newArrayList())
-        .map(resource -> ResourceModel.builder()
-            // include only primary identifier
+    return streamOfOrEmpty(response.projects())
+        .map(project -> ResourceModel.builder()
+            .projectName(project.projectName())
+            .arn(project.projectArn())
             .build())
         .collect(Collectors.toList());
   }
