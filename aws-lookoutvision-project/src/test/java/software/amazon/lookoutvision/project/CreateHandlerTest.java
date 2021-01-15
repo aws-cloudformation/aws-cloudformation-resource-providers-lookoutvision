@@ -53,14 +53,8 @@ public class CreateHandlerTest {
                 .projectName(projectName)
                 .build())
             .build();
-        final DescribeProjectResponse describeResponse = DescribeProjectResponse.builder()
-            .projectDescription(ProjectDescription.builder()
-                .projectName(projectName)
-                .projectArn(projectArn)
-                .build())
-            .build();
 
-        doReturn(createProjectResponse, describeResponse)
+        doReturn(createProjectResponse)
             .when(proxy)
             .injectCredentialsAndInvokeV2(
                 ArgumentMatchers.any(),

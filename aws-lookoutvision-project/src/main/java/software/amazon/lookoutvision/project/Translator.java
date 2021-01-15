@@ -3,6 +3,7 @@ package software.amazon.lookoutvision.project;
 import software.amazon.awssdk.services.lookoutvision.model.CreateProjectRequest;
 import software.amazon.awssdk.services.lookoutvision.model.DeleteProjectRequest;
 import software.amazon.awssdk.services.lookoutvision.model.DescribeProjectRequest;
+import software.amazon.awssdk.services.lookoutvision.model.CreateProjectResponse;
 import software.amazon.awssdk.services.lookoutvision.model.DescribeProjectResponse;
 import software.amazon.awssdk.services.lookoutvision.model.ListProjectsRequest;
 import software.amazon.awssdk.services.lookoutvision.model.ListProjectsResponse;
@@ -36,6 +37,18 @@ public class Translator {
   }
 
   /**
+   * Translate resource object from sdk into a resource model
+   * @param createProjectResponse the lookout vision create project response
+   * @return project resource model
+   */
+  static ResourceModel translateFromCreateResponse(final CreateProjectResponse createProjectResponse) {
+    return ResourceModel.builder()
+        .projectName(createProjectResponse.projectMetadata().projectName())
+        .arn(createProjectResponse.projectMetadata().projectArn())
+        .build();
+  }
+
+  /**
    * Request to read a resource
    * @param model resource model
    * @return describeProjectRequest the aws service request to describe a project
@@ -50,7 +63,7 @@ public class Translator {
   /**
    * Translates resource object from sdk into a resource model
    * @param describeProjectResponse the lookout vision describe project response
-   * @return model resource model
+   * @return project resource model
    */
   static ResourceModel translateFromReadResponse(final DescribeProjectResponse describeProjectResponse) {
     // e.g. https://github.com/aws-cloudformation/aws-cloudformation-resource-providers-logs/blob/2077c92299aeb9a68ae8f4418b5e932b12a8b186/aws-logs-loggroup/src/main/java/com/aws/logs/loggroup/Translator.java#L58-L73

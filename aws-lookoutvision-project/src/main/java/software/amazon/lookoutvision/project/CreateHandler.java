@@ -1,5 +1,6 @@
 package software.amazon.lookoutvision.project;
 
+import software.amazon.awssdk.services.lookoutvision.model.CreateProjectResponse;
 import software.amazon.awssdk.services.lookoutvision.model.ConflictException;
 import software.amazon.cloudformation.exceptions.ResourceAlreadyExistsException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
@@ -26,8 +27,9 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
 
         final ResourceModel model = request.getDesiredResourceState();
 
+        CreateProjectResponse createProjectResponse = null;
         try {
-            proxy.injectCredentialsAndInvokeV2(
+            createProjectResponse = proxy.injectCredentialsAndInvokeV2(
                 Translator.translateToCreateRequest(model),
                 ClientBuilder.getClient()::createProject);
         } catch (final ConflictException e) {
@@ -44,11 +46,8 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
         final String createMessage = String.format("%s successfully created.", ResourceModel.TYPE_NAME);
         logger.log(createMessage);
 
-        final ResourceModel finalModel = new ReadHandler().handleRequest(proxy,
-            request,
-            callbackContext,
-            logger)
-            .getResourceModel();
-        return ProgressEvent.defaultSuccessHandler(finalModel);
+        final ResourceModel modelFromCreateResult = Translator.translateFromCreateResponse(createProjectResponse);
+
+        return ProgressEvent.defaultSuccessHandler(modelFromCreateResult);
     }
 }
