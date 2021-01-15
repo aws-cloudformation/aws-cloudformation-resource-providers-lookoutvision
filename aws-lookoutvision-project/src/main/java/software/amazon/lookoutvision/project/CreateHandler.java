@@ -1,13 +1,12 @@
 package software.amazon.lookoutvision.project;
 
+import software.amazon.awssdk.services.lookoutvision.model.CreateProjectResponse;
+import software.amazon.awssdk.services.lookoutvision.model.ConflictException;
 import software.amazon.cloudformation.exceptions.ResourceAlreadyExistsException;
-import software.amazon.cloudformation.exceptions.ResourceNotFoundException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.ProgressEvent;
 import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
-
-import java.util.Objects;
 
 public class CreateHandler extends BaseHandler<CallbackContext> {
 
@@ -28,28 +27,27 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
 
         final ResourceModel model = request.getDesiredResourceState();
 
+        CreateProjectResponse createProjectResponse = null;
         try {
-            new ReadHandler().handleRequest(proxy, request, callbackContext, logger);
-            final ResourceAlreadyExistsException e = new ResourceAlreadyExistsException(ResourceModel.TYPE_NAME,
-                model.getProjectName());
-            logger.log(e.getMessage());
-            throw e;
-        } catch (final ResourceNotFoundException e) {
-            // We want a ResourceNotFoundException because this means the Project doesn't already exist,
-            // and we can go ahead and create one
-        }
+            createProjectResponse = proxy.injectCredentialsAndInvokeV2(
+                Translator.translateToCreateRequest(model),
+                ClientBuilder.getClient()::createProject);
+        } catch (final ConflictException e) {
+            if (e.getMessage().contains(String.format("Project %s already exists", model.getProjectName()))) {
+                final ResourceAlreadyExistsException resourceAlreadyExistsException =
+                    new ResourceAlreadyExistsException(ResourceModel.TYPE_NAME, model.getArn());
 
-        proxy.injectCredentialsAndInvokeV2(
-            Translator.translateToCreateRequest(model),
-            ClientBuilder.getClient()::createProject);
+                logger.log(resourceAlreadyExistsException.getMessage());
+                throw resourceAlreadyExistsException;
+            }
+
+            throw e;
+        }
         final String createMessage = String.format("%s successfully created.", ResourceModel.TYPE_NAME);
         logger.log(createMessage);
 
-        final ResourceModel finalModel = new ReadHandler().handleRequest(proxy,
-            request,
-            callbackContext,
-            logger)
-            .getResourceModel();
-        return ProgressEvent.defaultSuccessHandler(finalModel);
+        final ResourceModel modelFromCreateResult = Translator.translateFromCreateResponse(createProjectResponse);
+
+        return ProgressEvent.defaultSuccessHandler(modelFromCreateResult);
     }
 }
