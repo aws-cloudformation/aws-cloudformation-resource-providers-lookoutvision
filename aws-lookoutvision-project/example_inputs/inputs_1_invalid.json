@@ -1,11 +1,4 @@
 {
-  "TPSCode": "...",
-  "Title": "...",
-  "CoverSheetIncluded": "...",
-  "DueDate": "...",
-  "ApprovalDate": "...",
-  "Memo": "...",
-  "SecondCopyOfMemo": "...",
-  "TestCode": "...",
-  "Authors": "..."
+  "ProjectName": "InvalidProjectName@#/",
+  "Arn": "arn:aws:lookoutvision:us-east-1:111111111111:project/InvalidProjectName@#/"
 }

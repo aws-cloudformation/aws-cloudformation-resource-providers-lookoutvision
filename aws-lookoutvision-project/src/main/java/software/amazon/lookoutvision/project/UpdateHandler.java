@@ -15,6 +15,6 @@ public class UpdateHandler extends BaseHandler<CallbackContext> {
         final Logger logger) {
 
         // The AWS::LookoutVision::Project resource only has `createOnly` attributes, so there are currently no supported updates
-        return ProgressEvent.defaultSuccessHandler(request.getPreviousResourceState());
+        return new ReadHandler().handleRequest(proxy, request, callbackContext, logger);
     }
 }

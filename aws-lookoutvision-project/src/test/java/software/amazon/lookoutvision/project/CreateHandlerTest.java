@@ -8,22 +8,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.services.lookoutvision.model.ConflictException;
 import software.amazon.awssdk.services.lookoutvision.model.CreateProjectResponse;
-import software.amazon.awssdk.services.lookoutvision.model.DescribeProjectResponse;
-import software.amazon.awssdk.services.lookoutvision.model.ProjectDescription;
 import software.amazon.awssdk.services.lookoutvision.model.ProjectMetadata;
+import software.amazon.cloudformation.exceptions.CfnInvalidRequestException;
 import software.amazon.cloudformation.exceptions.ResourceAlreadyExistsException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.OperationStatus;
 import software.amazon.cloudformation.proxy.ProgressEvent;
 import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
+import software.amazon.lookoutvision.project.CallbackContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CreateHandlerTest {
@@ -61,13 +60,15 @@ public class CreateHandlerTest {
                 ArgumentMatchers.any()
             );
 
-        final ResourceModel model = ResourceModel.builder()
+        final ResourceModel expectedModel = ResourceModel.builder()
             .projectName(projectName)
             .arn(projectArn)
             .build();
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
-            .desiredResourceState(model)
+            .desiredResourceState(ResourceModel.builder()
+                .projectName(projectName)
+                .build())
             .build();
 
         final ProgressEvent<ResourceModel, CallbackContext> response = handler.handleRequest(proxy, request, null, logger);
@@ -77,7 +78,7 @@ public class CreateHandlerTest {
         assertThat(response.getCallbackContext()).isNull();
         assertThat(response.getCallbackDelaySeconds()).isEqualTo(0);
         assertThat(response.getResourceModels()).isNull();
-        assertThat(response.getResourceModel()).isEqualToComparingFieldByField(model);
+        assertThat(response.getResourceModel()).isEqualToComparingFieldByField(expectedModel);
         assertThat(response.getMessage()).isNull();
         assertThat(response.getErrorCode()).isNull();
     }
@@ -85,7 +86,6 @@ public class CreateHandlerTest {
     @Test
     public void handleRequest_FailureAlreadyExists() {
         final String projectName = "projectName";
-        final String projectArn = "arn:aws:lookoutvision:us-east-1:111111111111:project/projectName";
 
         final ConflictException conflictException = ConflictException.builder()
             .message("Project " + projectName + " already exists.")
@@ -100,7 +100,6 @@ public class CreateHandlerTest {
 
         final ResourceModel model = ResourceModel.builder()
             .projectName(projectName)
-            .arn(projectArn)
             .build();
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
@@ -108,6 +107,24 @@ public class CreateHandlerTest {
             .build();
 
         assertThrows(ResourceAlreadyExistsException.class,
+            () -> handler.handleRequest(proxy, request, null, logger));
+    }
+
+    @Test
+    public void handleRequest_Failure_ReadOnlyProperty() {
+        final String projectName = "projectName";
+        final String projectArn = "arn:aws:lookoutvision:us-east-1:111111111111:project/projectName";
+
+        final ResourceModel model = ResourceModel.builder()
+            .projectName(projectName)
+            .arn(projectArn)
+            .build();
+
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+            .desiredResourceState(model)
+            .build();
+
+        assertThrows(CfnInvalidRequestException.class,
             () -> handler.handleRequest(proxy, request, null, logger));
     }
 }
