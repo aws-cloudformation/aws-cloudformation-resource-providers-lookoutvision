@@ -26,7 +26,8 @@ public class DeleteHandler extends BaseHandler<CallbackContext> {
                 ClientBuilder.getClient()::deleteProject);
         } catch (ResourceNotFoundException e) {
             throw new software.amazon.cloudformation.exceptions.ResourceNotFoundException(ResourceModel.TYPE_NAME,
-                Objects.toString(model.getPrimaryIdentifier()));
+                Objects.toString(model.getPrimaryIdentifier()),
+                e);
         }
 
         final String message = String.format("%s successfully deleted.", ResourceModel.TYPE_NAME);
