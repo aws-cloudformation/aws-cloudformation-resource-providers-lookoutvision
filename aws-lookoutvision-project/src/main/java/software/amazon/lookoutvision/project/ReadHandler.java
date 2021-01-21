@@ -7,8 +7,6 @@ import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.ProgressEvent;
 import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
 
-import java.util.Objects;
-
 public class ReadHandler extends BaseHandler<CallbackContext> {
 
     private AmazonWebServicesClientProxy proxy;
@@ -54,7 +52,7 @@ public class ReadHandler extends BaseHandler<CallbackContext> {
 
         final software.amazon.cloudformation.exceptions.ResourceNotFoundException rpdkException =
             new software.amazon.cloudformation.exceptions.ResourceNotFoundException(ResourceModel.TYPE_NAME,
-                Objects.toString(nullSafeModel.getPrimaryIdentifier()));
+                nullSafeModel.getProjectName());
 
         logger.log(rpdkException.getMessage());
         throw rpdkException;
