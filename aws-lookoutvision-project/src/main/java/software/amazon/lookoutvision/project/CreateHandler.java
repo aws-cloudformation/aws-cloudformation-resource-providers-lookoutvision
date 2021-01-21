@@ -39,15 +39,11 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
                 Translator.translateToCreateRequest(model),
                 ClientBuilder.getClient()::createProject);
         } catch (final ConflictException e) {
-            if (e.getMessage().contains(String.format("Project %s already exists", model.getProjectName()))) {
-                final ResourceAlreadyExistsException resourceAlreadyExistsException =
-                    new ResourceAlreadyExistsException(ResourceModel.TYPE_NAME, model.getArn(), e);
+            final ResourceAlreadyExistsException resourceAlreadyExistsException =
+                new ResourceAlreadyExistsException(ResourceModel.TYPE_NAME, model.getProjectName(), e);
 
-                logger.log(resourceAlreadyExistsException.getMessage());
-                throw resourceAlreadyExistsException;
-            }
-
-            throw e;
+            logger.log(resourceAlreadyExistsException.getMessage());
+            throw resourceAlreadyExistsException;
         }
         final String createMessage = String.format("%s successfully created.", ResourceModel.TYPE_NAME);
         logger.log(createMessage);

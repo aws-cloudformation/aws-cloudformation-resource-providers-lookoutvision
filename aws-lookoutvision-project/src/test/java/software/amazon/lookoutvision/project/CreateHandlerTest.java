@@ -87,9 +87,7 @@ public class CreateHandlerTest {
     public void handleRequest_FailureAlreadyExists() {
         final String projectName = "projectName";
 
-        final ConflictException conflictException = ConflictException.builder()
-            .message("Project " + projectName + " already exists.")
-            .build();
+        final ConflictException conflictException = ConflictException.builder().build();
 
         doThrow(conflictException)
             .when(proxy)

@@ -47,7 +47,7 @@ _Update requires_: [Replacement](https://docs.aws.amazon.com/AWSCloudFormation/l
 
 ### Ref
 
-When you pass the logical ID of this resource to the intrinsic `Ref` function, Ref returns the Arn.
+When you pass the logical ID of this resource to the intrinsic `Ref` function, Ref returns the ProjectName.
 
 ### Fn::GetAtt
 
