@@ -4,6 +4,7 @@ import java.time.Duration;
 
 import org.mockito.ArgumentMatchers;
 import software.amazon.awssdk.core.SdkClient;
+import software.amazon.awssdk.services.lookoutvision.LookoutVisionClient;
 import software.amazon.awssdk.services.lookoutvision.model.DescribeProjectResponse;
 import software.amazon.awssdk.services.lookoutvision.model.ProjectDescription;
 import software.amazon.cloudformation.exceptions.ResourceNotFoundException;
@@ -36,6 +37,13 @@ public class ReadHandlerTest {
     @Mock
     private AmazonWebServicesClientProxy proxy;
 
+
+    @Mock
+    private ProxyClient<LookoutVisionClient> proxyClient;
+
+    @Mock
+    private LookoutVisionClient lookoutVisionClient;
+
     @Mock
     private Logger logger;
 
@@ -65,6 +73,10 @@ public class ReadHandlerTest {
                 ArgumentMatchers.any()
             );
 
+	doReturn(lookoutVisionClient)
+	    .when(proxyClient)
+	    .client();
+
         final ResourceModel expectedOutputModel = ResourceModel.builder()
             .projectName(projectName)
             .arn(projectArn)
@@ -76,7 +88,7 @@ public class ReadHandlerTest {
                 .build())
             .build();
 
-        final ProgressEvent<ResourceModel, CallbackContext> response = handler.handleRequest(proxy, request, null, logger);
+        final ProgressEvent<ResourceModel, CallbackContext> response = handler.handleRequest(proxy, request, null, proxyClient, logger);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo(OperationStatus.SUCCESS);
@@ -97,6 +109,10 @@ public class ReadHandlerTest {
                 ArgumentMatchers.any()
             );
 
+	doReturn(lookoutVisionClient)
+	    .when(proxyClient)
+	    .client();
+
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
             .desiredResourceState(ResourceModel.builder()
                 .projectName("projectName")
@@ -104,7 +120,7 @@ public class ReadHandlerTest {
             .build();
 
         assertThrows(ResourceNotFoundException.class,
-            () -> handler.handleRequest(proxy, request, null, logger));
+            () -> handler.handleRequest(proxy, request, null, proxyClient, logger));
     }
 
     @Test
@@ -117,7 +133,7 @@ public class ReadHandlerTest {
             .build();
 
         assertThrows(ResourceNotFoundException.class,
-            () -> handler.handleRequest(proxy, request, null, logger));
+            () -> handler.handleRequest(proxy, request, null, proxyClient, logger));
     }
 
     @Test
@@ -126,7 +142,7 @@ public class ReadHandlerTest {
             .build();
 
         assertThrows(ResourceNotFoundException.class,
-            () -> handler.handleRequest(proxy, request, null, logger));
+            () -> handler.handleRequest(proxy, request, null, proxyClient, logger));
     }
 
 }

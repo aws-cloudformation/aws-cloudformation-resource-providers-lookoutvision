@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import software.amazon.awssdk.services.lookoutvision.LookoutVisionClient;
 import software.amazon.awssdk.services.lookoutvision.model.ConflictException;
 import software.amazon.awssdk.services.lookoutvision.model.CreateProjectResponse;
 import software.amazon.awssdk.services.lookoutvision.model.ProjectMetadata;
@@ -15,6 +16,7 @@ import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.OperationStatus;
 import software.amazon.cloudformation.proxy.ProgressEvent;
+import software.amazon.cloudformation.proxy.ProxyClient;
 import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
 import software.amazon.lookoutvision.project.CallbackContext;
 
@@ -30,6 +32,12 @@ public class CreateHandlerTest {
 
     @Mock
     private AmazonWebServicesClientProxy proxy;
+
+    @Mock
+    private ProxyClient<LookoutVisionClient> proxyClient;
+
+    @Mock
+    private LookoutVisionClient lookoutVisionClient;
 
     @Mock
     private Logger logger;
@@ -60,6 +68,10 @@ public class CreateHandlerTest {
                 ArgumentMatchers.any()
             );
 
+	doReturn(lookoutVisionClient)
+	    .when(proxyClient)
+	    .client();
+
         final ResourceModel expectedModel = ResourceModel.builder()
             .projectName(projectName)
             .arn(projectArn)
@@ -71,7 +83,7 @@ public class CreateHandlerTest {
                 .build())
             .build();
 
-        final ProgressEvent<ResourceModel, CallbackContext> response = handler.handleRequest(proxy, request, null, logger);
+        final ProgressEvent<ResourceModel, CallbackContext> response = handler.handleRequest(proxy, request, null, proxyClient, logger);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo(OperationStatus.SUCCESS);
@@ -96,6 +108,10 @@ public class CreateHandlerTest {
                 ArgumentMatchers.any()
             );
 
+	doReturn(lookoutVisionClient)
+	    .when(proxyClient)
+	    .client();
+
         final ResourceModel model = ResourceModel.builder()
             .projectName(projectName)
             .build();
@@ -105,7 +121,7 @@ public class CreateHandlerTest {
             .build();
 
         assertThrows(ResourceAlreadyExistsException.class,
-            () -> handler.handleRequest(proxy, request, null, logger));
+            () -> handler.handleRequest(proxy, request, null, proxyClient, logger));
     }
 
     @Test

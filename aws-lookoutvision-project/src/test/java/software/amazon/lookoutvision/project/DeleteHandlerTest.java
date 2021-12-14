@@ -6,12 +6,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import software.amazon.awssdk.services.lookoutvision.LookoutVisionClient;
 import software.amazon.awssdk.services.lookoutvision.model.DeleteProjectResponse;
 import software.amazon.awssdk.services.lookoutvision.model.ResourceNotFoundException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.OperationStatus;
 import software.amazon.cloudformation.proxy.ProgressEvent;
+import software.amazon.cloudformation.proxy.ProxyClient;
 import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +28,12 @@ public class DeleteHandlerTest {
 
     @Mock
     private AmazonWebServicesClientProxy proxy;
+
+    @Mock
+    private ProxyClient<LookoutVisionClient> proxyClient;
+
+    @Mock
+    private LookoutVisionClient lookoutVisionClient;
 
     @Mock
     private Logger logger;
@@ -52,13 +60,17 @@ public class DeleteHandlerTest {
                 ArgumentMatchers.any()
             );
 
+	doReturn(lookoutVisionClient)
+	    .when(proxyClient)
+	    .client();
+
         final ResourceModel model = ResourceModel.builder().build();
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
             .desiredResourceState(model)
             .build();
 
-        final ProgressEvent<ResourceModel, CallbackContext> response = handler.handleRequest(proxy, request, new CallbackContext(), logger);
+        final ProgressEvent<ResourceModel, CallbackContext> response = handler.handleRequest(proxy, request, new CallbackContext(), proxyClient, logger);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo(OperationStatus.SUCCESS);
@@ -79,6 +91,10 @@ public class DeleteHandlerTest {
                 ArgumentMatchers.any()
             );
 
+	doReturn(lookoutVisionClient)
+	    .when(proxyClient)
+	    .client();
+
         final ResourceModel model = ResourceModel.builder().build();
 
         final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
@@ -86,7 +102,7 @@ public class DeleteHandlerTest {
             .build();
 
         assertThrows(software.amazon.cloudformation.exceptions.ResourceNotFoundException.class,
-            () -> handler.handleRequest(proxy, request, null, logger));
+            () -> handler.handleRequest(proxy, request, null, proxyClient, logger));
     }
 
 }

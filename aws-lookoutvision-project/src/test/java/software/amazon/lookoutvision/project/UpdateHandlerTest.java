@@ -6,12 +6,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import software.amazon.awssdk.services.lookoutvision.LookoutVisionClient;
 import software.amazon.awssdk.services.lookoutvision.model.DescribeProjectResponse;
 import software.amazon.awssdk.services.lookoutvision.model.ProjectDescription;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.OperationStatus;
 import software.amazon.cloudformation.proxy.ProgressEvent;
+import software.amazon.cloudformation.proxy.ProxyClient;
 import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
 import software.amazon.lookoutvision.project.CallbackContext;
 
@@ -25,6 +27,12 @@ public class UpdateHandlerTest {
 
    @Mock
    private AmazonWebServicesClientProxy proxy;
+
+   @Mock
+   private ProxyClient<LookoutVisionClient> proxyClient;
+
+   @Mock
+   private LookoutVisionClient lookoutVisionClient;
 
    @Mock
    private Logger logger;
@@ -55,6 +63,10 @@ public class UpdateHandlerTest {
                 ArgumentMatchers.any()
             );
 
+	doReturn(lookoutVisionClient)
+	    .when(proxyClient)
+	    .client();
+
         final ResourceModel expectedOutputModel = ResourceModel.builder()
             .projectName(projectName)
             .arn(projectArn)
@@ -66,7 +78,7 @@ public class UpdateHandlerTest {
                 .build())
             .build();
 
-        final ProgressEvent<ResourceModel, CallbackContext> response = handler.handleRequest(proxy, request, null, logger);
+        final ProgressEvent<ResourceModel, CallbackContext> response = handler.handleRequest(proxy, request, null, proxyClient, logger);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo(OperationStatus.SUCCESS);
