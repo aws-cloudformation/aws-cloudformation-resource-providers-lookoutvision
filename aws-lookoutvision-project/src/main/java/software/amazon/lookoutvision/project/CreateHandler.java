@@ -1,5 +1,6 @@
 package software.amazon.lookoutvision.project;
 
+import software.amazon.awssdk.services.lookoutvision.LookoutVisionClient;
 import software.amazon.awssdk.services.lookoutvision.model.ConflictException;
 import software.amazon.awssdk.services.lookoutvision.model.CreateProjectResponse;
 import software.amazon.cloudformation.exceptions.CfnInvalidRequestException;
@@ -7,9 +8,10 @@ import software.amazon.cloudformation.exceptions.ResourceAlreadyExistsException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.ProgressEvent;
+import software.amazon.cloudformation.proxy.ProxyClient;
 import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
 
-public class CreateHandler extends BaseHandler<CallbackContext> {
+public class CreateHandler extends BaseHandlerStd {
 
     private AmazonWebServicesClientProxy proxy;
     private ResourceHandlerRequest<ResourceModel> request;
@@ -20,6 +22,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
         final AmazonWebServicesClientProxy proxy,
         final ResourceHandlerRequest<ResourceModel> request,
         final CallbackContext callbackContext,
+        final ProxyClient<LookoutVisionClient> proxyClient,
         final Logger logger) {
 
         this.proxy = proxy;
@@ -37,7 +40,7 @@ public class CreateHandler extends BaseHandler<CallbackContext> {
         try {
             createProjectResponse = proxy.injectCredentialsAndInvokeV2(
                 Translator.translateToCreateRequest(model),
-                ClientBuilder.getClient()::createProject);
+                proxyClient.client()::createProject);
         } catch (final ConflictException e) {
             final ResourceAlreadyExistsException resourceAlreadyExistsException =
                 new ResourceAlreadyExistsException(ResourceModel.TYPE_NAME, model.getProjectName(), e);

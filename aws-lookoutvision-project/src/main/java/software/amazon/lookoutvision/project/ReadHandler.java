@@ -1,13 +1,15 @@
 package software.amazon.lookoutvision.project;
 
+import software.amazon.awssdk.services.lookoutvision.LookoutVisionClient;
 import software.amazon.awssdk.services.lookoutvision.model.DescribeProjectResponse;
 import software.amazon.awssdk.services.lookoutvision.model.ResourceNotFoundException;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.ProgressEvent;
+import software.amazon.cloudformation.proxy.ProxyClient;
 import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
 
-public class ReadHandler extends BaseHandler<CallbackContext> {
+public class ReadHandler extends BaseHandlerStd {
 
     private AmazonWebServicesClientProxy proxy;
     private ResourceHandlerRequest<ResourceModel> request;
@@ -18,16 +20,17 @@ public class ReadHandler extends BaseHandler<CallbackContext> {
         final AmazonWebServicesClientProxy proxy,
         final ResourceHandlerRequest<ResourceModel> request,
         final CallbackContext callbackContext,
+        final ProxyClient<LookoutVisionClient> proxyClient,
         final Logger logger) {
 
         this.proxy = proxy;
         this.request = request;
         this.logger = logger;
 
-        return fetchProjectAndAssertExists();
+        return fetchProjectAndAssertExists(proxyClient);
     }
 
-    private ProgressEvent<ResourceModel, CallbackContext> fetchProjectAndAssertExists() {
+    private ProgressEvent<ResourceModel, CallbackContext> fetchProjectAndAssertExists(final ProxyClient<LookoutVisionClient> proxyClient) {
         final ResourceModel model = request.getDesiredResourceState();
 
         if (model == null || model.getProjectName() == null) {
@@ -37,7 +40,7 @@ public class ReadHandler extends BaseHandler<CallbackContext> {
         DescribeProjectResponse describeProjectResponse = null;
         try {
             describeProjectResponse = proxy.injectCredentialsAndInvokeV2(Translator.translateToReadRequest(model),
-                ClientBuilder.getClient()::describeProject);
+                proxyClient.client()::describeProject);
         } catch (final ResourceNotFoundException e) {
             throwNotFoundException(model);
         }
