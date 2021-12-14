@@ -21,3 +21,7 @@ rpdk.log*
 
 # contains credentials
 sam-tests/
+
+# our logs
+rpdk.log
+rpdk.log*
