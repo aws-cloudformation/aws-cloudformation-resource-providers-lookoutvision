@@ -10,9 +10,7 @@
     "ProjectName": {
       "description": "The name of the Amazon Lookout for Vision project",
       "type": "string",
-      "minLength": 1,
-      "maxLength": 255,
-      "pattern": "[a-zA-Z0-9][a-zA-Z0-9_\\-]*"
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_\\-]{0,254}$"
     }
   },
   "properties": {
